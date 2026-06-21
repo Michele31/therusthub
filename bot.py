@@ -6,6 +6,7 @@ TOKEN = os.environ["DISCORD_TOKEN"]
 ROLE_NAME = os.environ.get("ROLE_NAME", "YOUR_ROLE_NAME_HERE")
 COUNTER_CHANNEL_ID = int(os.environ.get("COUNTER_CHANNEL_ID", "0"))
 CC_COUNTER_CHANNEL_ID = int(os.environ.get("CC_COUNTER_CHANNEL_ID", "0"))
+CC_ROLE_NAME = os.environ.get("CC_ROLE_NAME", "Content Creator")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -23,7 +24,7 @@ async def update_counter(guild):
     if CC_COUNTER_CHANNEL_ID != 0:
         channel = guild.get_channel(CC_COUNTER_CHANNEL_ID)
         if channel:
-            cc_role = discord.utils.get(guild.roles, name="Content Creator")
+            cc_role = discord.utils.get(guild.roles, name=CC_ROLE_NAME)
             count = sum(1 for m in guild.members if cc_role in m.roles) if cc_role else 0
             await channel.edit(name=f"Content Creators: {count}")
 
