@@ -23,14 +23,9 @@ async def update_counter(guild):
 
     if CC_COUNTER_CHANNEL_ID != 0:
         channel = guild.get_channel(CC_COUNTER_CHANNEL_ID)
-        if channel is None:
-            print(f"[DEBUG] CC counter channel {CC_COUNTER_CHANNEL_ID} not found")
-        else:
+        if channel:
             cc_role = discord.utils.get(guild.roles, name=CC_ROLE_NAME)
-            if cc_role is None:
-                print(f"[DEBUG] Role '{CC_ROLE_NAME}' not found. Available roles: {[r.name for r in guild.roles]}")
             count = sum(1 for m in guild.members if cc_role in m.roles) if cc_role else 0
-            print(f"[DEBUG] CC role='{CC_ROLE_NAME}' found={cc_role is not None} count={count}")
             await channel.edit(name=f"Content Creators: {count}")
 
 @bot.event
