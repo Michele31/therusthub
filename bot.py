@@ -1,11 +1,11 @@
 import os
 import discord
 from discord.ext import commands
-from discord.ext import tasks
 
 TOKEN = os.environ["DISCORD_TOKEN"]
 ROLE_NAME = os.environ.get("ROLE_NAME", "YOUR_ROLE_NAME_HERE")
 COUNTER_CHANNEL_ID = int(os.environ.get("COUNTER_CHANNEL_ID", "0"))
+CC_COUNTER_CHANNEL_ID = int(os.environ.get("CC_COUNTER_CHANNEL_ID", "0"))
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -14,13 +14,18 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 async def update_counter(guild):
-    if COUNTER_CHANNEL_ID == 0:
-        return
-    channel = guild.get_channel(COUNTER_CHANNEL_ID)
-    if channel is None:
-        return
-    count = sum(1 for m in guild.members if not m.bot)
-    await channel.edit(name=f"Members: {count}")
+    if COUNTER_CHANNEL_ID != 0:
+        channel = guild.get_channel(COUNTER_CHANNEL_ID)
+        if channel:
+            count = sum(1 for m in guild.members if not m.bot)
+            await channel.edit(name=f"Members: {count}")
+
+    if CC_COUNTER_CHANNEL_ID != 0:
+        channel = guild.get_channel(CC_COUNTER_CHANNEL_ID)
+        if channel:
+            cc_role = discord.utils.get(guild.roles, name="Content Creator")
+            count = sum(1 for m in guild.members if cc_role in m.roles) if cc_role else 0
+            await channel.edit(name=f"Content Creators: {count}")
 
 @bot.event
 async def on_ready():
@@ -38,6 +43,11 @@ async def on_member_join(member):
 @bot.event
 async def on_member_remove(member):
     await update_counter(member.guild)
+
+@bot.event
+async def on_member_update(before, after):
+    if before.roles != after.roles:
+        await update_counter(after.guild)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
