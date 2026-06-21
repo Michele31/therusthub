@@ -16,15 +16,24 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
 
 @bot.command()
+@commands.has_permissions(administrator=True)
 async def role(ctx):
     role = discord.utils.get(ctx.guild.roles, name=ROLE_NAME)
     if role is None:
         await ctx.send(f"Role '{ROLE_NAME}' not found.")
         return
-    if role in ctx.author.roles:
-        await ctx.send(f"You already have the **{ROLE_NAME}** role.")
+    members = [m for m in ctx.guild.members if not m.bot and role not in m.roles]
+    if not members:
+        await ctx.send(f"Everyone already has the **{ROLE_NAME}** role.")
         return
-    await ctx.author.add_roles(role)
-    await ctx.send(f"✅ Gave you the **{ROLE_NAME}** role!")
+    await ctx.send(f"Assigning **{ROLE_NAME}** to {len(members)} members...")
+    for member in members:
+        await member.add_roles(role)
+    await ctx.send(f"✅ Done! Gave **{ROLE_NAME}** to {len(members)} members.")
+
+@role.error
+async def role_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ You need Administrator permission to use this command.")
 
 bot.run(TOKEN)
