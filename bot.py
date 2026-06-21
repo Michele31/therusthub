@@ -15,6 +15,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 async def on_ready():
     print(f"Logged in as {bot.user}")
 
+@bot.event
+async def on_member_join(member):
+    role = discord.utils.get(member.guild.roles, name=ROLE_NAME)
+    if role:
+        await member.add_roles(role)
+
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def role(ctx):
