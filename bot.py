@@ -27,9 +27,16 @@ async def role(ctx):
         await ctx.send(f"Everyone already has the **{ROLE_NAME}** role.")
         return
     await ctx.send(f"Assigning **{ROLE_NAME}** to {len(members)} members...")
+    failed = 0
     for member in members:
-        await member.add_roles(role)
-    await ctx.send(f"✅ Done! Gave **{ROLE_NAME}** to {len(members)} members.")
+        try:
+            await member.add_roles(role)
+        except discord.Forbidden:
+            failed += 1
+        except discord.HTTPException:
+            failed += 1
+    success = len(members) - failed
+    await ctx.send(f"✅ Done! Gave **{ROLE_NAME}** to {success}/{len(members)} members." + (f" ({failed} failed — check bot role hierarchy)" if failed else ""))
 
 @role.error
 async def role_error(ctx, error):
